@@ -7,7 +7,7 @@
 
 'use strict';
 
-module.exports = function hasOwnDeep(obj, key) {
+module.exports = function hasOwnDeep(obj, key, escape) {
   if (typeof obj !== 'object') {
     throw new Error('has-own-deep expects an object');
   }
@@ -16,9 +16,20 @@ module.exports = function hasOwnDeep(obj, key) {
     return false;
   }
 
-  var segs = key.split('.');
-  var len = segs.length, i = 0;
+  if (escape === true) {
+    key = key.split('\\.').join('__TMP__');
+  }
 
+  var segs = key.split('.');
+
+  if (escape === true) {
+    var len = segs.length;
+    while (len--) {
+      segs[len] = segs[len].split('__TMP__').join('.');
+    }
+  }
+
+  var len = segs.length, i = 0;
   while (len--) {
     var seg = segs[i++];
     if (!obj.hasOwnProperty(seg)) {
@@ -26,5 +37,5 @@ module.exports = function hasOwnDeep(obj, key) {
     }
     obj = obj[seg];
   }
-  return !!obj;
+  return true;
 };
