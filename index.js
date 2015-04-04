@@ -7,6 +7,8 @@
 
 'use strict';
 
+var hasOwn = Object.prototype.hasOwnProperty;
+
 module.exports = function hasOwnDeep(obj, key, escape) {
   if (typeof obj !== 'object') {
     throw new Error('has-own-deep expects an object');
@@ -32,7 +34,7 @@ module.exports = function hasOwnDeep(obj, key, escape) {
   var len = segs.length, i = 0;
   while (len--) {
     var seg = segs[i++];
-    if (!obj.hasOwnProperty(seg)) {
+    if (!hasOwn.call(obj, seg)) {
       return false;
     }
     obj = obj[seg];
