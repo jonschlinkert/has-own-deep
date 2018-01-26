@@ -1,76 +1,94 @@
 /*!
  * has-own-deep <https://github.com/jonschlinkert/has-own-deep>
  *
- * Copyright (c) 2015, Jon Schlinkert.
+ * Copyright (c) 2015-2018, Jon Schlinkert.
  * Licensed under the MIT License.
  */
 
 'use strict';
 
 require('mocha');
-var assert = require('assert');
-var should = require('should');
-var hasOwnDeep = require('./');
+const assert = require('assert');
+const hasOwnDeep = require('./');
 
 describe('hasOwnDeep', function() {
-  it('should return false when no key is passed:', function() {
-    hasOwnDeep({}).should.be.false;
+  it('should throw an error when the first argument is not an object', function() {
+    assert.throws(() => hasOwnDeep(), /expected/);
+    assert.throws(() => hasOwnDeep('a'), /expected/);
   });
 
-  it('should return true when key is an own property of the given object:', function() {
-    hasOwnDeep({a: 'b'}, 'a').should.be.true;
+  it('should throw an error when the second argument is not a string', function() {
+    assert.throws(() => hasOwnDeep({}), /expected/);
+    assert.throws(() => hasOwnDeep({}, {}), /expected/);
   });
 
-  it('should return true a nested key is an own property of the given object:', function() {
-    hasOwnDeep({a: {b: {c: 'd'}}}, 'a').should.be.true;
-    hasOwnDeep({a: {b: {c: 'd'}}}, 'a.b').should.be.true;
-    hasOwnDeep({a: {b: {c: 'd'}}}, 'a.b.c').should.be.true;
+  it('should return true when key is an own property of the given object', function() {
+    assert(hasOwnDeep({ a: 'b' }, 'a'));
   });
 
-  it('should respect keys escaped with slashes when `true` is passed:', function() {
-    hasOwnDeep({'a.b': 'c'}, 'a\\.b', true).should.be.true;
-    hasOwnDeep({'a.b.c': 'd'}, 'a\\.b\\.c', true).should.be.true;
+  it('should return true a nested key is an own property of the given object', function() {
+    assert(hasOwnDeep({ a: { b: { c: 'd' } } }, 'a'));
+    assert(hasOwnDeep({ a: { b: { c: 'd' } } }, 'a.b'));
+    assert(hasOwnDeep({ a: { b: { c: 'd' } } }, 'a.b.c'));
   });
 
-  it('should not respect keys escaped with slashes when `true` is not passed:', function() {
-    hasOwnDeep({'a.b': 'c'}, 'a\\.b').should.be.false;
-    hasOwnDeep({'a.b.c': 'd'}, 'a\\.b\\.c').should.be.false;
+  it('should support nested keys with dots in them', function() {
+    assert(hasOwnDeep({ 'a.b.c': 'd' }, 'a.b.c'));
+    assert(hasOwnDeep({ 'a.b': { c: 'd' } }, 'a.b.c'));
+    assert(hasOwnDeep({ 'a': { b: { c: 'd' } } }, 'a.b.c'));
+    assert(hasOwnDeep({ 'a': { 'b.c': 'd' } }, 'a.b.c'));
+    assert(!hasOwnDeep({ 'a.b.c.d': 'e' }, 'a.b.c'));
+
+    assert(hasOwnDeep({ 'a.b.c.d.e.f': 'g' }, 'a.b.c.d.e.f'));
+    assert(hasOwnDeep({ 'a.b.c.d.e': { f: 'g' } }, 'a.b.c.d.e.f'));
+    assert(hasOwnDeep({ 'a.b.c.d': { e: { f: 'g' } } }, 'a.b.c.d.e.f'));
+    assert(hasOwnDeep({ 'a.b.c': { d: { e: { f: 'g' } } } }, 'a.b.c.d.e.f'));
+    assert(hasOwnDeep({ 'a.b': { c: { d: { e: { f: 'g' } } } } }, 'a.b.c.d.e.f'));
+    assert(hasOwnDeep({ 'a': { b: { c: { d: { e: { f: 'g' } } } } } }, 'a.b.c.d.e.f'));
+
+    assert(hasOwnDeep({ 'a.b.c.d.e': { 'f': 'g' } }, 'a.b.c.d.e.f'));
+    assert(hasOwnDeep({ 'a.b.c.d': { 'e.f': 'g' } }, 'a.b.c.d.e.f'));
+    assert(hasOwnDeep({ 'a.b.c': { 'd.e.f': 'g' } }, 'a.b.c.d.e.f'));
+    assert(hasOwnDeep({ 'a.b': { 'c.d.e.f': 'g' } }, 'a.b.c.d.e.f'));
+    assert(hasOwnDeep({ 'a': { 'b.c.d.e.f': 'g' } }, 'a.b.c.d.e.f'));
+
+    assert(hasOwnDeep({ 'a.b': { 'c.d': { 'e.f': 'g' } } }, 'a.b.c.d.e.f'));
+    assert(hasOwnDeep({ 'a.b': { 'c': { 'd.e.f': 'g' } } }, 'a.b.c.d.e.f'));
+    assert(hasOwnDeep({ 'a': { 'b.c.d.e': { 'f': 'g' } } }, 'a.b.c.d.e.f'));
+    assert(hasOwnDeep({ 'a': { 'b.c.d': { 'e.f': 'g' } } }, 'a.b.c.d.e.f'));
+    assert(hasOwnDeep({ 'a': { 'b.c': { 'd.e.f': 'g' } } }, 'a.b.c.d.e.f'));
+    assert(hasOwnDeep({ 'a': { 'b': { 'c.d.e.f': 'g' } } }, 'a.b.c.d.e.f'));
   });
 
-  it('should work with falsey values:', function() {
-    hasOwnDeep({a: {b: {c: null}}}, 'a').should.be.true;
-    hasOwnDeep({a: {b: {c: null}}}, 'a.b').should.be.true;
-    hasOwnDeep({a: {b: {c: null}}}, 'a.b.c').should.be.true;
-    hasOwnDeep({a: {b: {c: undefined}}}, 'a').should.be.true;
-    hasOwnDeep({a: {b: {c: undefined}}}, 'a.b').should.be.true;
-    hasOwnDeep({a: {b: {c: undefined}}}, 'a.b.c').should.be.true;
-    hasOwnDeep({a: {b: {c: false}}}, 'a').should.be.true;
-    hasOwnDeep({a: {b: {c: false}}}, 'a.b').should.be.true;
-    hasOwnDeep({a: {b: {c: false}}}, 'a.b.c').should.be.true;
-    hasOwnDeep({a: {b: {c: 0}}}, 'a').should.be.true;
-    hasOwnDeep({a: {b: {c: 0}}}, 'a.b').should.be.true;
-    hasOwnDeep({a: {b: {c: 0}}}, 'a.b.c').should.be.true;
-    hasOwnDeep({a: {b: {c: ''}}}, 'a').should.be.true;
-    hasOwnDeep({a: {b: {c: ''}}}, 'a.b').should.be.true;
-    hasOwnDeep({a: {b: {c: ''}}}, 'a.b.c').should.be.true;
+  it('should respect keys escaped with slashes', function() {
+    assert(hasOwnDeep({ 'a.b': 'c' }, 'a\\.b'));
+    assert(hasOwnDeep({ 'a.b.c': 'd' }, 'a\\.b\\.c'));
   });
 
-  it('should return false when a nested key is not an own property of the given object:', function() {
-    hasOwnDeep({a: {b: {c: 'd'}}}, 'c').should.be.false;
-    hasOwnDeep({a: {b: {c: 'd'}}}, 'c.c').should.be.false;
-    hasOwnDeep({a: {b: {c: 'd'}}}, 'a.c').should.be.false;
-    hasOwnDeep({a: {b: {c: 'd'}}}, 'a.b.d').should.be.false;
-    hasOwnDeep({a: {b: {c: 'd'}}}, 'a.e.c').should.be.false;
-    hasOwnDeep({a: {b: {c: 'd'}}}, 'z.b.c').should.be.false;
+  it('should work with falsey values', function() {
+    assert(hasOwnDeep({ a: { b: { c: '' } } }, 'a'));
+    assert(hasOwnDeep({ a: { b: { c: '' } } }, 'a.b'));
+    assert(hasOwnDeep({ a: { b: { c: '' } } }, 'a.b.c'));
+    assert(hasOwnDeep({ a: { b: { c: 0 } } }, 'a'));
+    assert(hasOwnDeep({ a: { b: { c: 0 } } }, 'a.b'));
+    assert(hasOwnDeep({ a: { b: { c: 0 } } }, 'a.b.c'));
+    assert(hasOwnDeep({ a: { b: { c: false } } }, 'a'));
+    assert(hasOwnDeep({ a: { b: { c: false } } }, 'a.b'));
+    assert(hasOwnDeep({ a: { b: { c: false } } }, 'a.b.c'));
+    assert(hasOwnDeep({ a: { b: { c: null } } }, 'a'));
+    assert(hasOwnDeep({ a: { b: { c: null } } }, 'a.b'));
+    assert(hasOwnDeep({ a: { b: { c: null } } }, 'a.b.c'));
+    assert(hasOwnDeep({ a: { b: { c: undefined } } }, 'a'));
+    assert(hasOwnDeep({ a: { b: { c: undefined } } }, 'a.b'));
+    assert(hasOwnDeep({ a: { b: { c: undefined } } }, 'a.b.c'));
   });
 
-  it('should throw an error on bad args:', function() {
-    (function() {
-      hasOwnDeep();
-    }).should.throw('has-own-deep expects an object');
-
-    (function() {
-      hasOwnDeep('a');
-    }).should.throw('has-own-deep expects an object');
+  it('should return false when a nested key is not an own property of the given object', function() {
+    assert(!hasOwnDeep({ a: { b: { c: 'd' } } }, 'a.b.d'));
+    assert(!hasOwnDeep({ a: { b: { c: 'd' } } }, 'a.c'));
+    assert(!hasOwnDeep({ a: { b: { c: 'd' } } }, 'a.e.c'));
+    assert(!hasOwnDeep({ a: { b: { c: 'd' } } }, 'c'));
+    assert(!hasOwnDeep({ a: { b: { c: 'd' } } }, 'c.c'));
+    assert(!hasOwnDeep({ a: { b: { c: 'd' } } }, 'z.b.c'));
   });
 });

@@ -7,37 +7,59 @@
 
 'use strict';
 
-var hasOwn = Object.prototype.hasOwnProperty;
+const hasOwn = Object.prototype.hasOwnProperty;
+const split = require('split-string');
+const isObject = require('isobject');
 
-module.exports = function hasOwnDeep(obj, key, escape) {
-  if (typeof obj !== 'object') {
-    throw new Error('has-own-deep expects an object');
+module.exports = function(target, path, options) {
+  if (!isObject(target)) {
+    throw new TypeError('expected an object');
   }
 
-  if (typeof key !== 'string') {
-    return false;
+  if (typeof path !== 'string') {
+    throw new TypeError('expected object path to be a string');
   }
 
-  if (escape === true) {
-    key = key.split('\\.').join('__TMP__');
+  if (hasOwn.call(target, path)) {
+    return true;
   }
 
-  var segs = key.split('.');
+  let segs = split(path, options);
+  let obj = target;
 
-  if (escape === true) {
-    var len = segs.length;
-    while (len--) {
-      segs[len] = segs[len].split('__TMP__').join('.');
+  while (isObject(obj) && segs.length) {
+    const key = segs.join('.');
+    const seg = segs[0];
+
+    if (hasOwn.call(obj, seg)) {
+      obj = obj[segs.shift()];
+      continue;
     }
-  }
 
-  var len = segs.length, i = 0;
-  while (len--) {
-    var seg = segs[i++];
-    if (!hasOwn.call(obj, seg)) {
+    if (hasOwn.call(obj, key)) {
+      obj = obj[key];
+      continue;
+    }
+
+    let rest = segs.slice();
+    let has = false;
+
+    while (rest.length) {
+      const prop = rest.join('.');
+
+      if ((has = hasOwn.call(obj, prop))) {
+        segs = segs.slice(rest.length);
+        obj = obj[prop];
+        break;
+      }
+
+      rest.pop();
+    }
+
+    if (!has) {
       return false;
     }
-    obj = obj[seg];
   }
+
   return true;
 };
