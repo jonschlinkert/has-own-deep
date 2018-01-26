@@ -7,37 +7,37 @@
 
 'use strict';
 
-/* deps:mocha */
+require('mocha');
 var assert = require('assert');
 var should = require('should');
 var hasOwnDeep = require('./');
 
-describe('hasOwnDeep', function () {
-  it('should return false when no key is passed:', function () {
+describe('hasOwnDeep', function() {
+  it('should return false when no key is passed:', function() {
     hasOwnDeep({}).should.be.false;
   });
 
-  it('should return true when key is an own property of the given object:', function () {
+  it('should return true when key is an own property of the given object:', function() {
     hasOwnDeep({a: 'b'}, 'a').should.be.true;
   });
 
-  it('should return true a nested key is an own property of the given object:', function () {
+  it('should return true a nested key is an own property of the given object:', function() {
     hasOwnDeep({a: {b: {c: 'd'}}}, 'a').should.be.true;
     hasOwnDeep({a: {b: {c: 'd'}}}, 'a.b').should.be.true;
     hasOwnDeep({a: {b: {c: 'd'}}}, 'a.b.c').should.be.true;
   });
 
-  it('should respect keys escaped with slashes when `true` is passed:', function () {
+  it('should respect keys escaped with slashes when `true` is passed:', function() {
     hasOwnDeep({'a.b': 'c'}, 'a\\.b', true).should.be.true;
     hasOwnDeep({'a.b.c': 'd'}, 'a\\.b\\.c', true).should.be.true;
   });
 
-  it('should not respect keys escaped with slashes when `true` is not passed:', function () {
+  it('should not respect keys escaped with slashes when `true` is not passed:', function() {
     hasOwnDeep({'a.b': 'c'}, 'a\\.b').should.be.false;
     hasOwnDeep({'a.b.c': 'd'}, 'a\\.b\\.c').should.be.false;
   });
 
-  it('should work with falsey values:', function () {
+  it('should work with falsey values:', function() {
     hasOwnDeep({a: {b: {c: null}}}, 'a').should.be.true;
     hasOwnDeep({a: {b: {c: null}}}, 'a.b').should.be.true;
     hasOwnDeep({a: {b: {c: null}}}, 'a.b.c').should.be.true;
@@ -55,7 +55,7 @@ describe('hasOwnDeep', function () {
     hasOwnDeep({a: {b: {c: ''}}}, 'a.b.c').should.be.true;
   });
 
-  it('should return false when a nested key is not an own property of the given object:', function () {
+  it('should return false when a nested key is not an own property of the given object:', function() {
     hasOwnDeep({a: {b: {c: 'd'}}}, 'c').should.be.false;
     hasOwnDeep({a: {b: {c: 'd'}}}, 'c.c').should.be.false;
     hasOwnDeep({a: {b: {c: 'd'}}}, 'a.c').should.be.false;
@@ -64,12 +64,12 @@ describe('hasOwnDeep', function () {
     hasOwnDeep({a: {b: {c: 'd'}}}, 'z.b.c').should.be.false;
   });
 
-  it('should throw an error on bad args:', function () {
-    (function () {
+  it('should throw an error on bad args:', function() {
+    (function() {
       hasOwnDeep();
     }).should.throw('has-own-deep expects an object');
 
-    (function () {
+    (function() {
       hasOwnDeep('a');
     }).should.throw('has-own-deep expects an object');
   });
