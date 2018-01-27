@@ -8,12 +8,11 @@
 'use strict';
 
 const hasOwn = Object.prototype.hasOwnProperty;
-const split = require('split-string');
 const isObject = require('isobject');
 
-module.exports = function(target, path, options) {
-  if (!isObject(target)) {
-    throw new TypeError('expected an object');
+module.exports = function(target, path) {
+  if (!isObject(target) && !Array.isArray(target)) {
+    throw new TypeError('expected the first argument to be an object or array');
   }
 
   if (typeof path !== 'string') {
@@ -24,27 +23,19 @@ module.exports = function(target, path, options) {
     return true;
   }
 
-  let segs = split(path, options);
+  let segs = Array.isArray(path) ? path : path.split(/\\?\./);
   let obj = target;
 
-  while (isObject(obj) && segs.length) {
-    const key = segs.join('.');
-    const seg = segs[0];
-
-    if (hasOwn.call(obj, seg)) {
+  while ((isObject(obj) || Array.isArray(obj)) && segs.length) {
+    if (hasOwn.call(obj, segs[0])) {
       obj = obj[segs.shift()];
-      continue;
-    }
-
-    if (hasOwn.call(obj, key)) {
-      obj = obj[key];
       continue;
     }
 
     let rest = segs.slice();
     let has = false;
 
-    while (rest.length) {
+    do {
       const prop = rest.join('.');
 
       if ((has = hasOwn.call(obj, prop))) {
@@ -54,7 +45,8 @@ module.exports = function(target, path, options) {
       }
 
       rest.pop();
-    }
+    } while (rest.length);
+
 
     if (!has) {
       return false;

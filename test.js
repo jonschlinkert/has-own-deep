@@ -13,13 +13,13 @@ const hasOwnDeep = require('./');
 
 describe('hasOwnDeep', function() {
   it('should throw an error when the first argument is not an object', function() {
-    assert.throws(() => hasOwnDeep(), /expected/);
-    assert.throws(() => hasOwnDeep('a'), /expected/);
+    assert.throws(() => hasOwnDeep(undefined, 'a'), /object or array/);
+    assert.throws(() => hasOwnDeep(null, 'a'), /object or array/);
   });
 
   it('should throw an error when the second argument is not a string', function() {
-    assert.throws(() => hasOwnDeep({}), /expected/);
-    assert.throws(() => hasOwnDeep({}, {}), /expected/);
+    assert.throws(() => hasOwnDeep({}), /string/);
+    assert.throws(() => hasOwnDeep({}, {}), /string/);
   });
 
   it('should return true when key is an own property of the given object', function() {
